@@ -100,8 +100,8 @@ export default function Page() {
 
 		if (socket) {
 			socket.on("get", (dataWs: ResponseApiType[]) => {
-				const dataLastPintu = dataWs[0].sensors.pintu.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-				const dataLastGerak = dataWs[0].sensors.gerak.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+				const dataLastPintu = dataWs[0]?.sensors?.pintu ? [...dataWs[0].sensors.pintu].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) : [];
+				const dataLastGerak = dataWs[0]?.sensors?.gerak ? [...dataWs[0].sensors.gerak].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) : [];
 				setData(dataWs);
 				setLastPintu(dataLastPintu);
 				setLastGerak(dataLastGerak);
