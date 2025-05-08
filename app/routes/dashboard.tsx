@@ -128,7 +128,7 @@ export default function Page() {
 	if (isLoading) return <p>Loading...</p>;
 
 	return (
-		<div className="bg-slate-800 h-full pb-16 text-slate-50">
+		<div className="bg-slate-800 min-h-svh pb-16 text-slate-50">
 			<header className="flex sticky top-0 z-50 w-full items-center border-b border-b-slate-800 bg-slate-700">
 				<div className="mx-auto w-[1200px] flex px-4 xl:px-0 h-12 items-center justify-between">
 					<Breadcrumb className="block">

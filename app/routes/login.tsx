@@ -66,7 +66,7 @@ export default function page() {
 	};
 
 	return (
-		<div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-slate-50">
+		<div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-slate-800">
 			<div className="w-full max-w-sm">
 				<div className={cn("flex flex-col gap-6")}>
 					<Card>
@@ -107,7 +107,7 @@ export default function page() {
 									</div>
 									<Button
 										type="submit"
-										className="w-full bg-blue-600 hover:cursor-pointer hover:bg-blue-700"
+										className="w-full bg-slate-800 hover:cursor-pointer hover:bg-slate-700"
 										disabled={isLoading}
 									>
 										Masuk
