@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 
 export function meta({}: Route.MetaArgs) {
-	return [{ title: "Dashboard | Monitoring Sawi Menggunakan Internet Of Things" }, { name: "Sawiku", content: "Dashboard" }];
+	return [{ title: "Dashboard | IOT Kamar Mandi" }, { name: "IOT Kamar Mandi", content: "Dashboard" }];
 }
 
 interface ResponseApiType {

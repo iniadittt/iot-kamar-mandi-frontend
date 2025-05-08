@@ -10,7 +10,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
 export function meta({}: Route.MetaArgs) {
-	return [{ title: "Login | Monitoring Sawi Menggunakan Internet Of Things" }, { name: "Sawiku", content: "Login" }];
+	return [{ title: "Login | IOT Kamar Mandi" }, { name: "IOT Kamar Mandi", content: "Login" }];
 }
 
 export default function page() {
