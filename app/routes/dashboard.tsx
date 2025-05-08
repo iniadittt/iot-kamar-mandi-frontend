@@ -76,6 +76,10 @@ export default function Page() {
 				});
 				if (!response.ok) return;
 				const result = await response.json();
+				if (!result.success) {
+					setError(result.message);
+					return;
+				}
 				const resultData = result.data as ResponseApiType[];
 				const dataLastPintu = resultData[0].sensors.pintu.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 				const dataLastGerak = resultData[0].sensors.gerak.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
