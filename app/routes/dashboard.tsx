@@ -83,8 +83,8 @@ export default function Page() {
 					return;
 				}
 				const resultData = result.data as ResponseApiType[];
-				const dataLastPintu = resultData[0]?.sensors?.pintu.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-				const dataLastGerak = resultData[0]?.sensors?.gerak.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+				const dataLastPintu = resultData[0]?.sensors?.pintu ? [...resultData[0].sensors.pintu].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) : [];
+				const dataLastGerak = resultData[0]?.sensors?.gerak ? [...resultData[0].sensors.gerak].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) : [];
 				setData(resultData);
 				setLastPintu(dataLastPintu);
 				setLastGerak(dataLastGerak);
