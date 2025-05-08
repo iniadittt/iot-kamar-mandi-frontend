@@ -74,8 +74,10 @@ export default function Page() {
 						"Content-Type": "application/json",
 					},
 				});
+				console.log({ response });
 				if (!response.ok) return;
 				const result = await response.json();
+				console.log({ result });
 				if (!result.success) {
 					setError(result.message);
 					return;
