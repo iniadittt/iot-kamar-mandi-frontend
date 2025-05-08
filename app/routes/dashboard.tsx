@@ -172,14 +172,14 @@ export default function Page() {
 						{
 							title: "Sensor Pintu",
 							key: "PINTU",
-							value: lastPintu[lastPintu.length - 1]?.value ?? "Loading...",
-							date: lastPintu[lastPintu.length - 1]?.createdAt ? formatTanggal(new Date(lastPintu[lastPintu.length - 1].createdAt)) : "Loading...",
+							value: lastPintu.length > 0 ? lastPintu[lastPintu.length - 1]?.value : "-",
+							date: lastPintu.length > 0 && lastPintu[lastPintu.length - 1]?.createdAt ? formatTanggal(new Date(lastPintu[lastPintu.length - 1].createdAt)) : "Loading...",
 						},
 						{
 							title: "Sensor Gerak",
 							key: "GERAK",
-							value: lastGerak[lastGerak.length - 1]?.value ?? "Loading...",
-							date: lastGerak[lastGerak.length - 1]?.createdAt ? formatTanggal(new Date(lastGerak[lastGerak.length - 1].createdAt)) : "Loading...",
+							value: lastGerak.length > 0 ? lastGerak[lastGerak.length - 1]?.value : "-",
+							date: lastGerak.length > 0 && lastGerak[lastGerak.length - 1]?.createdAt ? formatTanggal(new Date(lastGerak[lastGerak.length - 1].createdAt)) : "-",
 						},
 					].map((item, index) => (
 						<Card
@@ -211,7 +211,7 @@ export default function Page() {
 								config={chartConfigGerak}
 								className="aspect-auto h-[300px] w-full"
 							>
-								<AreaChart data={lastGerak.map((item) => ({ ...item, value: item.value === "GERAK" ? 1 : 0 }))}>
+								<AreaChart data={lastGerak ? lastGerak.map((item) => ({ ...item, value: item.value === "GERAK" ? 1 : 0 })) : []}>
 									<defs>
 										<linearGradient
 											id="fillDesktop"
