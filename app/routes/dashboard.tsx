@@ -4,14 +4,15 @@ import Cookies from "js-cookie";
 import { io } from "socket.io-client";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { BACKEND_URL } from "~/constant";
+import { BACKEND_URL, ALERT_DIAM } from "~/constant";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { formatTanggal } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList } from "~/components/ui/breadcrumb";
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "~/components/ui/chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "~/components/ui/card";
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "~/components/ui/alert-dialog";
+import { CircleAlertIcon } from "lucide-react";
 
 export function meta({}: Route.MetaArgs) {
 	return [{ title: "Dashboard | IOT Kamar Mandi" }, { name: "IOT Kamar Mandi", content: "Dashboard" }];
@@ -56,6 +57,7 @@ export default function Page() {
 	const [data, setData] = useState<ResponseApiType[]>([]);
 	const [lastPintu, setLastPintu] = useState<ResponseApiType["sensors"]["pintu"]>([]);
 	const [lastGerak, setLastGerak] = useState<ResponseApiType["sensors"]["gerak"]>([]);
+	const [notif, setNotif] = useState<boolean>(false);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -74,10 +76,8 @@ export default function Page() {
 						"Content-Type": "application/json",
 					},
 				});
-				console.log({ response });
 				if (!response.ok) return;
 				const result = await response.json();
-				console.log({ result });
 				if (!result.success) {
 					setError(result.message);
 					return;
@@ -88,6 +88,9 @@ export default function Page() {
 				setData(resultData);
 				setLastPintu(dataLastPintu);
 				setLastGerak(dataLastGerak);
+				const a = dataLastPintu[0]?.value === "TERTUTUP";
+				const b = dataLastGerak?.slice(-ALERT_DIAM).every((item) => item.value === "DIAM");
+				setNotif(a && b);
 			} catch (error) {
 				console.error("Error fetching data:", error);
 				Cookies.remove("token");
@@ -105,6 +108,9 @@ export default function Page() {
 				setData(dataWs);
 				setLastPintu(dataLastPintu);
 				setLastGerak(dataLastGerak);
+				const a = dataLastPintu[0]?.value === "TERTUTUP";
+				const b = dataLastGerak?.slice(-ALERT_DIAM).every((item) => item.value === "DIAM");
+				setNotif(a && b);
 			});
 		}
 
@@ -134,166 +140,177 @@ export default function Page() {
 	if (isLoading) return <p>Loading...</p>;
 
 	return (
-		<div className="bg-slate-800 min-h-svh pb-16 text-slate-50">
-			<header className="flex sticky top-0 z-50 w-full items-center border-b border-b-slate-800 bg-slate-700">
-				<div className="mx-auto w-[1200px] flex px-4 xl:px-0 h-12 items-center justify-between">
-					<Breadcrumb className="block">
-						<BreadcrumbList>
-							<BreadcrumbItem>
-								<BreadcrumbLink
-									href="/dashboard"
-									className="font-semibold text-slate-100 hover:text-slate-50"
-								>
-									Monitoring IOT Kemar Mandi
-								</BreadcrumbLink>
-							</BreadcrumbItem>
-						</BreadcrumbList>
-					</Breadcrumb>
-					<div className="flex gap-4 items-center">
-						<Button
-							onClick={handlerLogout}
-							variant="destructive"
-							className="hover:cursor-pointer"
-						>
-							Keluar
-						</Button>
-					</div>
-				</div>
-			</header>
-
-			<div className="xl:w-[1200px] w-full xl:mx-auto grid gap-4 py-4 xl:px-0">
-				<div className="px-4">
-					<h1 className="font-semibold text-2xl">Dashboard Monitoring</h1>
-					<p>Monitoring sensor IOT yang ada di dalam kamar mandi.</p>
-				</div>
-
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-4">
-					{[
-						{
-							title: "Sensor Pintu",
-							key: "PINTU",
-							value: lastPintu.length > 0 ? lastPintu[lastPintu.length - 1]?.value : "-",
-							date: lastPintu.length > 0 && lastPintu[lastPintu.length - 1]?.createdAt ? formatTanggal(new Date(lastPintu[lastPintu.length - 1].createdAt)) : "Loading...",
-						},
-						{
-							title: "Sensor Gerak",
-							key: "GERAK",
-							value: lastGerak.length > 0 ? lastGerak[lastGerak.length - 1]?.value : "-",
-							date: lastGerak.length > 0 && lastGerak[lastGerak.length - 1]?.createdAt ? formatTanggal(new Date(lastGerak[lastGerak.length - 1].createdAt)) : "-",
-						},
-					].map((item, index) => (
-						<Card
-							key={index}
-							className="@container/card bg-slate-700 border-slate-700"
-						>
-							<CardHeader className="relative">
-								<CardDescription className="text-slate-50">{item.title}</CardDescription>
-								<CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums text-slate-50">{item.value}</CardTitle>
-							</CardHeader>
-							<CardFooter className="flex-col items-start gap-1 text-sm text-slate-50">
-								<div className="line-clamp-1 flex gap-2 font-medium">Terakhir diupdate:</div>
-								<div className="text-slate-50">{item.date}</div>
-							</CardFooter>
-						</Card>
-					))}
-				</div>
-
-				<div className="px-4">
-					<Card className="@container/card bg-slate-700 border-slate-700">
-						<CardHeader className="relative">
-							<CardTitle className="text-slate-50">Pergerakan saat ini</CardTitle>
-							<CardDescription className="text-slate-50">
-								<span className="@[540px]/card:block">Di dalam kamar mandi</span>
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-							<ChartContainer
-								config={chartConfigGerak}
-								className="aspect-auto h-[300px] w-full"
+		<>
+			<AlertDialog open={notif}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							<CircleAlertIcon className="size-12 mx-auto text-red-700" />
+						</AlertDialogTitle>
+						<AlertDialogDescription className="text-black text-lg mt-4">Terjadi potensi kecelakaan di kamar mandi. Mohon segera lakukan pengecekan untuk memastikan kondisi penghuni dalam keadaan aman...</AlertDialogDescription>
+					</AlertDialogHeader>
+				</AlertDialogContent>
+			</AlertDialog>
+			<div className="bg-slate-800 min-h-svh pb-16 text-slate-50">
+				<header className="flex sticky top-0 z-50 w-full items-center border-b border-b-slate-800 bg-slate-700">
+					<div className="mx-auto w-[1200px] flex px-4 xl:px-0 h-12 items-center justify-between">
+						<Breadcrumb className="block">
+							<BreadcrumbList>
+								<BreadcrumbItem>
+									<BreadcrumbLink
+										href="/dashboard"
+										className="font-semibold text-slate-100 hover:text-slate-50"
+									>
+										Monitoring IOT Kemar Mandi
+									</BreadcrumbLink>
+								</BreadcrumbItem>
+							</BreadcrumbList>
+						</Breadcrumb>
+						<div className="flex gap-4 items-center">
+							<Button
+								onClick={handlerLogout}
+								variant="destructive"
+								className="hover:cursor-pointer"
 							>
-								<AreaChart data={lastGerak ? lastGerak.map((item) => ({ ...item, value: item.value === "GERAK" ? 1 : 0 })) : []}>
-									<defs>
-										<linearGradient
-											id="fillDesktop"
-											x1="0"
-											y1="0"
-											x2="0"
-											y2="1"
-										>
-											<stop
-												offset="5%"
-												stopColor="var(--primary)"
-												stopOpacity={1.0}
-											/>
-											<stop
-												offset="95%"
-												stopColor="var(--primary)"
-												stopOpacity={0.1}
-											/>
-										</linearGradient>
-										<linearGradient
-											id="fillMobile"
-											x1="0"
-											y1="0"
-											x2="0"
-											y2="1"
-										>
-											<stop
-												offset="5%"
-												stopColor="var(--primary)"
-												stopOpacity={0.8}
-											/>
-											<stop
-												offset="95%"
-												stopColor="var(--primary)"
-												stopOpacity={0.1}
-											/>
-										</linearGradient>
-									</defs>
-									<CartesianGrid vertical={false} />
-									<XAxis
-										dataKey="createdAt"
-										tickLine={false}
-										axisLine={false}
-										tickMargin={8}
-										minTickGap={50}
-										tickFormatter={(value) => {
-											const date = new Date(value);
-											return date.toLocaleDateString("en-US", {
-												month: "short",
-												day: "numeric",
-											});
-										}}
-									/>
-									<ChartTooltip
-										cursor={false}
-										content={
-											<ChartTooltipContent
-												className="w-52"
-												indicator="dot"
-												labelFormatter={(value) => {
-													return new Date(value).toLocaleDateString("en-US", {
-														month: "short",
-														day: "numeric",
-													});
-												}}
-											/>
-										}
-									/>
-									<Area
-										dataKey="value"
-										type="linear"
-										fill="#fff"
-										stroke="#fff"
-										stackId="a"
-									/>
-								</AreaChart>
-							</ChartContainer>
-						</CardContent>
-					</Card>
-				</div>
+								Keluar
+							</Button>
+						</div>
+					</div>
+				</header>
 
-				{/* <div className="px-4">
+				<div className="xl:w-[1200px] w-full xl:mx-auto grid gap-4 py-4 xl:px-0">
+					<div className="px-4">
+						<h1 className="font-semibold text-2xl">Dashboard Monitoring</h1>
+						<p>Monitoring sensor IOT yang ada di dalam kamar mandi.</p>
+					</div>
+
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-4">
+						{[
+							{
+								title: "Sensor Pintu",
+								key: "PINTU",
+								value: lastPintu.length > 0 ? lastPintu[lastPintu.length - 1]?.value : "-",
+								date: lastPintu.length > 0 && lastPintu[lastPintu.length - 1]?.createdAt ? formatTanggal(new Date(lastPintu[lastPintu.length - 1].createdAt)) : "Loading...",
+							},
+							{
+								title: "Sensor Gerak",
+								key: "GERAK",
+								value: lastGerak.length > 0 ? lastGerak[lastGerak.length - 1]?.value : "-",
+								date: lastGerak.length > 0 && lastGerak[lastGerak.length - 1]?.createdAt ? formatTanggal(new Date(lastGerak[lastGerak.length - 1].createdAt)) : "-",
+							},
+						].map((item, index) => (
+							<Card
+								key={index}
+								className="@container/card bg-slate-700 border-slate-700"
+							>
+								<CardHeader className="relative">
+									<CardDescription className="text-slate-50">{item.title}</CardDescription>
+									<CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums text-slate-50">{item.value}</CardTitle>
+								</CardHeader>
+								<CardFooter className="flex-col items-start gap-1 text-sm text-slate-50">
+									<div className="line-clamp-1 flex gap-2 font-medium">Terakhir diupdate:</div>
+									<div className="text-slate-50">{item.date}</div>
+								</CardFooter>
+							</Card>
+						))}
+					</div>
+
+					<div className="px-4">
+						<Card className="@container/card bg-slate-700 border-slate-700">
+							<CardHeader className="relative">
+								<CardTitle className="text-slate-50">Pergerakan saat ini</CardTitle>
+								<CardDescription className="text-slate-50">
+									<span className="@[540px]/card:block">Di dalam kamar mandi</span>
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+								<ChartContainer
+									config={chartConfigGerak}
+									className="aspect-auto h-[300px] w-full"
+								>
+									<AreaChart data={lastGerak ? lastGerak.map((item) => ({ ...item, value: item.value === "GERAK" ? 1 : 0 })) : []}>
+										<defs>
+											<linearGradient
+												id="fillDesktop"
+												x1="0"
+												y1="0"
+												x2="0"
+												y2="1"
+											>
+												<stop
+													offset="5%"
+													stopColor="var(--primary)"
+													stopOpacity={1.0}
+												/>
+												<stop
+													offset="95%"
+													stopColor="var(--primary)"
+													stopOpacity={0.1}
+												/>
+											</linearGradient>
+											<linearGradient
+												id="fillMobile"
+												x1="0"
+												y1="0"
+												x2="0"
+												y2="1"
+											>
+												<stop
+													offset="5%"
+													stopColor="var(--primary)"
+													stopOpacity={0.8}
+												/>
+												<stop
+													offset="95%"
+													stopColor="var(--primary)"
+													stopOpacity={0.1}
+												/>
+											</linearGradient>
+										</defs>
+										<CartesianGrid vertical={false} />
+										<XAxis
+											dataKey="createdAt"
+											tickLine={false}
+											axisLine={false}
+											tickMargin={8}
+											minTickGap={50}
+											tickFormatter={(value) => {
+												const date = new Date(value);
+												return date.toLocaleDateString("en-US", {
+													month: "short",
+													day: "numeric",
+												});
+											}}
+										/>
+										<ChartTooltip
+											cursor={false}
+											content={
+												<ChartTooltipContent
+													className="w-52"
+													indicator="dot"
+													labelFormatter={(value) => {
+														return new Date(value).toLocaleDateString("en-US", {
+															month: "short",
+															day: "numeric",
+														});
+													}}
+												/>
+											}
+										/>
+										<Area
+											dataKey="value"
+											type="linear"
+											fill="#fff"
+											stroke="#fff"
+											stackId="a"
+										/>
+									</AreaChart>
+								</ChartContainer>
+							</CardContent>
+						</Card>
+					</div>
+
+					{/* <div className="px-4">
 					<Card className="bg-slate-700 border-slate-700">
 						<CardHeader className="relative">
 							<CardTitle className="text-slate-50">Tabel Data Sensor</CardTitle>
@@ -321,7 +338,8 @@ export default function Page() {
 						</CardContent>
 					</Card>
 				</div> */}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }
