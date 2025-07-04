@@ -190,7 +190,7 @@ export default function Page() {
 								title: "Sensor Pintu",
 								key: "PINTU",
 								value: lastPintu.length > 0 ? lastPintu[lastPintu.length - 1]?.value : "-",
-								date: lastPintu.length > 0 && lastPintu[lastPintu.length - 1]?.createdAt ? formatTanggal(new Date(lastPintu[lastPintu.length - 1].createdAt)) : "Loading...",
+								date: lastPintu.length > 0 && lastPintu[lastPintu.length - 1]?.createdAt ? formatTanggal(new Date(lastPintu[lastPintu.length - 1].createdAt)) : "-",
 							},
 							{
 								title: "Sensor Gerak",
